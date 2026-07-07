@@ -1,0 +1,25 @@
+{
+  "name": "Y-haplogroup predictor",
+  "short_name": "Y-DNA",
+  "start_url": "/dna-tests/predictor/",
+  "scope": "/dna-tests/predictor/",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#2563eb",
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
