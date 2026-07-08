@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Y-haplogroup predictor</title>
-<meta name="app-version" content="99940d18f491">
+<meta name="app-version" content="34049cd686a0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -126,16 +126,16 @@ function t(k){return translate(window.__I18N,L,k);}
 function fmt(k,vars){var s=t(k);for(var p in vars){s=s.split('{'+p+'}').join(vars[p]);}return s;}
 </script><script>
 let D, RATES, C, maxLen, predExclude = new Set();
-let KITMAP = new Map(); // KIT (upper) -> строка маркеров кита из корпуса (поиск по киту)
-let lastShare = ""; // сводка последнего результата для navigator.share
-// Раскодировать корпус (gzip+base64) через встроенный DecompressionStream.
+let KITMAP = new Map(); 
+let lastShare = ""; 
+
 async function loadData(){
   const bin = Uint8Array.from(atob(window.__PDATA), c=>c.charCodeAt(0));
   const stream = new Blob([bin]).stream().pipeThrough(new DecompressionStream("gzip"));
   return JSON.parse(new TextDecoder().decode(await new Response(stream).arrayBuffer()));
 }
 
-// ---- порт lib/distance.js (prepareMarkers / findHaploDistPrep) ----
+
 const _EMPTY = { k: 0 };
 function prepareMarkers(markers){
   const n = markers.length, prep = new Array(n);
@@ -172,7 +172,7 @@ function findHaploDistPrep(pa, pb, mutationRates){
   return result;
 }
 
-// ---- порт lib/tmrca.js (calcGMRCA / точка TMRCA) для сортировки соседей ----
+
 function logFactorial(n){ if(n<=1)return 0; let r=0; for(let i=2;i<=n;i++)r+=Math.log(i); return r; }
 function cumProb0(mu,n,lamda,t){ return 1-Math.exp(-(2*mu*n+lamda)*t); }
 function posteriorDensity(t,lamda,mu,k,n){
@@ -196,7 +196,7 @@ function calcGMRCA(n,dist,mu,probability){
 }
 function tmrcaPoint(numData,dist,muRate){ const mu=muRate>0?muRate:0.002; return calcGMRCA(numData,dist,mu,0.95)*30; }
 
-// ---- порт lib/predict.js (плюрализм-спуск), breadcrumb предрасчитан в корпусе ----
+
 function splitPrefixes(path){
   const segs=String(path).split("->").map(s=>s.trim()).filter(Boolean); const out=[]; let acc="";
   for(let i=0;i<segs.length;i++){ acc=i===0?segs[i]:acc+"->"+segs[i]; out.push(acc); } return out;
@@ -229,11 +229,11 @@ function predict(voters,opts){
     confident: depth>=3 && (support.get(current)>=o.minSupport || confidence>=0.6) };
 }
 
-// ---- корпус: [kit,sheet,markersStr,haplo,bc,z,m,mc,po] (без имён/paternal) ----
-// bc (resolveBreadcrumb) — и голосование, и показ в таблице (для J1 = merged без
-// backbone-шума Z18436; для R1b/J2/... = treePath). haplo (raw) держим только на фолбэк.
-// po=1 — справочный predict_only-кит (голосует, но не в all_filtered/соседях).
-// Инициализация после раскодирования корпуса. ready — промис готовности.
+
+
+
+
+
 var ready = (async ()=>{
   D = await loadData(); RATES = D.rates;
   C = D.corpus.map(r=>({ kit:r[0], sheet:r[1], markers:r[2],
@@ -245,10 +245,10 @@ var ready = (async ()=>{
   document.querySelector("#mkhint").textContent=fmt("mkhint",{order:D.markerNames.slice(0,12).join(", "), n:D.builtKits});
 })();
 function parseInput(raw){ return String(raw||"").trim().split(/[\s,;]+/).filter(t=>t!==""); }
-// Ввод — либо STR-маркеры, либо Kit-номер. Сначала пробуем ВСЮ строку целиком как кит
-// в корпусе — так покрываются и «пробельные» киты вроде "DAG24 L 32", и обычные
-// "IN35602". Найден: {markers,kit}. Если не кит, но одиночный токен, похожий на кит
-// (цифры, опц. 1-2 буквы) — {notFoundKit} (ошибка, не парсим как 1 маркер). Иначе — маркеры.
+
+
+
+
 function resolveInput(raw){
   const s=String(raw||"").trim();
   const whole=KITMAP.get(s.toUpperCase());
@@ -284,13 +284,13 @@ function run(markers, topN){
 
 const $=s=>document.querySelector(s);
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-// Breadcrumb -> цепочка ссылок на discover.familytreedna.com/y-dna/<L>-<SNP>/tree.
-// Первый сегмент — алиас клады (J1/R1b/...): даёт букву L (J/R/G/...), сам без ссылки.
-// Остальные — SNP: чистим ведущий "X-"/пробел (терминал-форма) для URL.
-// Порт treePathDisplay: сокращаем путь ПОКАЗА до ключевых узлов (корень+терминал+
-// protected всегда, из промежуточных top-K крупнейших по kitsCount, kits>=floor).
-// Предикт идёт по ПОЛНОМУ bc — displayShort только для рендера (не трогает спуск).
-let PROT_NODES=new Set(); // заполняется в ready (D готов после раскодирования)
+
+
+
+
+
+
+let PROT_NODES=new Set(); 
 function termTok(s){ const i=String(s).indexOf("-"); return i===-1?String(s).trim():String(s).slice(i+1).trim(); }
 function displayShort(path){
   const segs=String(path||"").split("->").map(s=>s.trim()).filter(Boolean);
@@ -317,8 +317,8 @@ function linkHaplo(path){
     return '<a href="https://discover.familytreedna.com/y-dna/'+esc(L+"-"+snp)+'/tree" target="_blank" rel="noopener">'+esc(t)+'</a>';
   }).join("->");
 }
-// Пояснения к метрикам (модалка по клику на «?»). Ключи словаря → перевод на
-// клике (openHelp), чтобы модалка следовала за активным языком L.
+
+
 const HELP={
   depth:["helpDepthTitle","helpDepthBody"],
   conf:["helpConfTitle","helpConfBody"],
@@ -338,13 +338,13 @@ document.addEventListener("keydown",(e)=>{
   if(e.key==="Escape"){ closeHelp(); return; }
   if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("help")){ e.preventDefault(); openHelp(e.target.getAttribute("data-help")); }
 });
-// Клик/фокус в textarea маркеров — выделить весь текст (удобно заменить вставкой).
-// setTimeout — чтобы выделение не сбросил mouseup после focus.
+
+
 $("#mk").addEventListener("focus",function(){ const el=this; setTimeout(()=>el.select(),0); });
-// Копирование маркеров (делегирование — строки таблицы перерисовываются innerHTML).
+
 async function copyText(t){
   try{ await navigator.clipboard.writeText(t); return true; }
-  catch(_){ // fallback для file:// / небезопасного контекста
+  catch(_){ 
     const ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.opacity="0";
     document.body.appendChild(ta); ta.select();
     let ok=false; try{ ok=document.execCommand("copy"); }catch(e){} document.body.removeChild(ta); return ok;
@@ -356,37 +356,37 @@ document.addEventListener("click", async (e)=>{
   b.textContent=ok?"✅":"⚠️";
   setTimeout(()=>{ b.textContent="📋"; }, 1200);
 });
-// Клик по кит-номеру соседа: искать по его маркерам (?markers=<kit>) в этой же
-// странице (без перезагрузки). href оставлен для средней кнопки/нового таба и шаринга.
+
+
 document.addEventListener("click",(e)=>{
   const a=e.target.closest(".kitlink"); if(!a) return;
-  if(e.metaKey||e.ctrlKey||e.shiftKey||e.button===1) return; // новая вкладка — не перехватываем
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.button===1) return; 
   e.preventDefault();
   const kit=a.getAttribute("data-kit")||""; $("#mk").value=kit; doPredict(true, true);
 });
-// «Поделиться»: мобильные — нативный шеринг (navigator.share), десктоп — копировать URL.
+
 document.addEventListener("click", async (e)=>{
   const b=e.target.closest("#share"); if(!b) return;
   const url=window.location.href;
   const isMobile=/Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
   if(isMobile && navigator.share){
-    try{ await navigator.share({title:t("shareTitle"), text:(lastShare?lastShare+"\n":""), url}); }catch(_){} // отмену игнорим
+    try{ await navigator.share({title:t("shareTitle"), text:(lastShare?lastShare+"\n":""), url}); }catch(_){} 
     return;
   }
   const ok=await copyText(url);
   const prev=b.textContent; b.textContent=ok?t("shareCopied"):t("shareFail");
   setTimeout(()=>{ b.textContent=prev; }, 1600);
 });
-// URL ?markers=<enc>: после предсказания кладём в URL (шарабельно), при заходе по
-// такому URL — предзаполняем textarea и сразу считаем. replaceState — без перезагрузки,
-// путь/hash сохраняем (работает и в hugo-странице).
+
+
+
 function setMarkersUrl(raw){
   try{ const u=new URL(window.location.href); u.searchParams.set("markers", raw);
     history.replaceState(null,"", u.pathname+u.search+u.hash); }catch(_){}
 }
 async function doPredict(pushUrl, scrollTo){
   const raw=$("#mk").value;
-  await ready; // KITMAP готов после раскодирования корпуса
+  await ready; 
   const inp=resolveInput(raw);
   if(inp.notFoundKit){ $("#out").innerHTML='<div class="card err">'+fmt("errKitNotFound",{kit:esc(inp.notFoundKit)})+'</div>'; return; }
   const markers=inp.markers;
@@ -400,17 +400,17 @@ async function doPredict(pushUrl, scrollTo){
   }, 10);
 }
 $("#go").onclick=()=>doPredict(true);
-// Автозапуск по ?markers= в URL (шаринг/закладка): предзаполнить + посчитать +
-// проскроллить к результатам (пользователь пришёл ради них).
+
+
 ready.then(()=>{
   let um=null; try{ um=new URLSearchParams(window.location.search).get("markers"); }catch(_){}
   if(um){ $("#mk").value=um; doPredict(false, true); }
 });
 function render(j){
-  window.__lastResult=j; // для ре-рендера при смене языка
+  window.__lastResult=j; 
   const p=j.prediction, lbl={Z1842:"J1-Z1842",M172:"J2-M172"};
   const conf = p ? (p.confidence*100).toFixed(0) : "0";
-  // текст для navigator.share: сводка результата (в активном языке)
+  
   lastShare = p ? fmt("shareText",{haplo:displayShort(p.haplogroup), depth:p.depth, conf:conf, tail:(p.confident?"":t("shareTailUnsure"))})
     : (t("shareTitle")+": "+t("errNoPrediction"));
   let vhtml='<span class="mut" style="align-self:center">'+t("votes")+hlp('votes')+'</span>';
@@ -436,7 +436,7 @@ function render(j){
     '<div class="card"><label>'+t("neighborsTitle")+'</label><div class="tablewrap"><table><thead><tr>'+
     '<th>'+t("thKit")+'</th><th>'+t("thProject")+'</th><th>'+t("thHaplo")+'</th><th>'+t("thTmrca")+'</th><th>'+t("thDiff")+'</th><th>'+t("thMarkers")+'</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
-// Применить перевод к статичной разметке + перерисовать последний результат.
+
 function applyI18n(){
   document.documentElement.lang=L;
   document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'));});
