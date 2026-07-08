@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Y-haplogroup predictor</title>
-<meta name="app-version" content="34049cd686a0">
+<meta name="app-version" content="6ae8c184be56">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -84,6 +84,7 @@ td[data-label='Маркеров']::before{content:' · ';color:var(--mut)}
 }</style><script type="text/javascript">
 (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
 ym(110493999,"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true});
+window.__YM_ID=110493999;
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/110493999" style="position:absolute;left:-9999px;" alt="" /></div></noscript></head><body>
 <div class="wrap"><h1 data-i18n="appTitle"></h1>
@@ -384,6 +385,23 @@ function setMarkersUrl(raw){
   try{ const u=new URL(window.location.href); u.searchParams.set("markers", raw);
     history.replaceState(null,"", u.pathname+u.search+u.hash); }catch(_){}
 }
+
+
+
+function metrikaLog(kit, markers, res){
+  try{
+    if(!window.__YM_ID || typeof ym!=='function') return;
+    const p=res&&res.prediction;
+    ym(window.__YM_ID,'reachGoal','predict',{
+      kit: kit||'',
+      markers: (markers||[]).join(' '),
+      clade: (res&&res.cladeRoot)||'',
+      haplo: p?p.haplogroup:'',
+      depth: p?p.depth:0,
+      matched: res?res.matched:0
+    });
+  }catch(_){}
+}
 async function doPredict(pushUrl, scrollTo){
   const raw=$("#mk").value;
   await ready; 
@@ -394,7 +412,9 @@ async function doPredict(pushUrl, scrollTo){
   if(!markers.length){ $("#out").innerHTML='<div class="card err">'+t("errNoMarkers")+'</div>'; return; }
   $("#out").innerHTML='<div class="card mut">'+t("calculating")+'</div>';
   setTimeout(()=>{
-    render(run(markers,topN));
+    const res=run(markers,topN);
+    render(res);
+    metrikaLog(inp.kit||"", markers, res);
     if(pushUrl!==false) setMarkersUrl(raw);
     if(scrollTo){ try{ $("#out").scrollIntoView({behavior:"smooth",block:"start"}); }catch(_){ $("#out").scrollIntoView(); } }
   }, 10);
