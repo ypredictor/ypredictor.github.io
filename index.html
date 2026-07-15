@@ -36,7 +36,7 @@
   window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason;window.__dbg('REJECT: '+((r&&(r.stack||r.message))||r));});
   var _ce=console.error; console.error=function(){try{window.__dbg('console.error: '+Array.prototype.map.call(arguments,String).join(' '));}catch(_){}return _ce.apply(console,arguments);};
 }catch(e){}})();</script>
-<meta name="app-version" content="26cf0c90ef4f">
+<meta name="app-version" content="18ea9918f990">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -418,7 +418,7 @@ function b64urlEnc(str){ try{ return btoa(unescape(encodeURIComponent(str))).rep
 function b64urlDec(s){ try{ s=String(s).replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='='; return decodeURIComponent(escape(atob(s))); }catch(e){ return ""; } }
 function encodeStart(raw){ raw=String(raw||"").trim(); return /^[A-Za-z0-9_-]+$/.test(raw)?raw:('b64-'+b64urlEnc(raw)); }
 function decodeStart(s){ s=String(s||""); return /^b64-/.test(s)?b64urlDec(s.slice(4)):s; }
-function tgShareUrl(raw){ var base=(typeof D!=='undefined'&&D&&D.tgLink)||""; if(!base)return ""; return base+(base.indexOf('?')===-1?'?':'&')+'startapp='+encodeStart(raw); }
+function tgShareUrl(raw){ var base=(typeof D!=='undefined'&&D&&D.tgLink)||""; if(!base)return ""; if(!/^https?:\/\//.test(base)) base='https://'+base; return base+(base.indexOf('?')===-1?'?':'&')+'startapp='+encodeStart(raw); }
 
 
 
@@ -566,7 +566,7 @@ document.addEventListener('click',async e=>{
   window.__onPredictDone=function(){ try{ TG.haptic(); }catch(e){} };
   var wrap=document.createElement('div'); wrap.id='tgdbg';
   var head=document.createElement('div'); head.id='tgdbg-head';
-  head.textContent='🛜 TG Mini App · app 26cf0c90ef4f · '+TG.platform+' · Bot API '+(TG.version||'?');
+  head.textContent='🛜 TG Mini App · app 18ea9918f990 · '+TG.platform+' · Bot API '+(TG.version||'?');
   var log=document.createElement('pre'); log.id='tgdbg-log';
   head.addEventListener('click',function(){ wrap.classList.toggle('open'); });
   wrap.appendChild(head); wrap.appendChild(log); (document.body||document.documentElement).appendChild(wrap);
