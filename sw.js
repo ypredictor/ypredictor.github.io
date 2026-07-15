@@ -1,4 +1,4 @@
-const APP_VERSION="5e63d5280c6e";
+const APP_VERSION="573d3d8edecc";
 const CACHE='pred-cache-v2';
 const ASSETS=['index.html','manifest.webmanifest','version.json'];
 const shouldCache=function shouldCache(resp) {

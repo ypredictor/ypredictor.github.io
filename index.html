@@ -10,15 +10,32 @@
 <meta name="twitter:title" content="Y-haplogroup predictor">
 <meta name="twitter:description" content="Online Y-DNA haplogroup predictor from FamilyTreeDNA STR markers: closest matches and predicted branch down the Y-tree in seconds. No signup.">
 <meta name="twitter:image" content="android-chrome-512x512.png">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script>(function(){try{var w=window.Telegram&&window.Telegram.WebApp;if(w&&w.platform&&w.platform!=='unknown'){document.documentElement.classList.add('tg');w.ready();
+<script>(function(){try{
+  var h=(location.hash||'').replace(/^#/,''); if(h.indexOf('tgWebApp')===-1) h=(location.search||'').replace(/^\?/,'');
+  var p=null; try{p=new URLSearchParams(h);}catch(e){}
+  var platform=p&&p.get('tgWebAppPlatform');
+  var proxy=!!(window.TelegramWebviewProxy)||!!(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.performAction);
+  if(!platform&&!proxy) return;
+  platform=platform||'tg'; var version=(p&&p.get('tgWebAppVersion'))||'';
+  var theme={}; try{theme=JSON.parse(decodeURIComponent((p&&p.get('tgWebAppThemeParams'))||'%7B%7D'));}catch(e){}
+  var lang=''; try{var d=new URLSearchParams((p&&p.get('tgWebAppData'))||'');var u=JSON.parse(d.get('user')||'null');lang=(u&&u.language_code)||'';}catch(e){}
+  function postEvent(type,data){ data=data||{}; try{
+    if(window.TelegramWebviewProxy&&window.TelegramWebviewProxy.postEvent){window.TelegramWebviewProxy.postEvent(type,JSON.stringify(data));return;}
+    if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.performAction){window.webkit.messageHandlers.performAction.postMessage({eventType:type,eventData:JSON.stringify(data)});return;}
+    if(window.external&&window.external.notify){window.external.notify(JSON.stringify({eventType:type,eventData:data}));return;}
+    window.parent.postMessage(JSON.stringify({eventType:type,eventData:data}),'*');
+  }catch(e){} }
+  var de=document.documentElement; de.classList.add('tg');
+  for(var k in theme){ try{de.style.setProperty('--tg-theme-'+k.replace(/_/g,'-'),theme[k]);}catch(e){} }
+  window.__TG={platform:platform,version:version,lang:lang,haptic:function(){postEvent('web_app_trigger_haptic_feedback',{type:'notification',notification_type:'success'});}};
+  postEvent('web_app_ready'); postEvent('web_app_expand');
   window.__DBG=window.__DBG||[];
-  window.__dbg=function(m){ try{ window.__DBG.push(String(m)); var p=document.getElementById('tgdbg-log'); if(p){ p.textContent+=m+'\n'; p.scrollTop=p.scrollHeight; } }catch(_){}};
-  window.addEventListener('error',function(e){ window.__dbg('ERR: '+(e&&(e.message||e.error))+' @'+((e&&e.filename)||'')+':'+((e&&e.lineno)||'')); });
-  window.addEventListener('unhandledrejection',function(e){ var r=e&&e.reason; window.__dbg('REJECT: '+((r&&(r.stack||r.message))||r)); });
-  var _ce=console.error; console.error=function(){ try{ window.__dbg('console.error: '+Array.prototype.map.call(arguments,String).join(' ')); }catch(_){} return _ce.apply(console,arguments); };
-}}catch(e){}})();</script>
-<meta name="app-version" content="5e63d5280c6e">
+  window.__dbg=function(m){try{window.__DBG.push(String(m));var pn=document.getElementById('tgdbg-log');if(pn){pn.textContent+=m+'\n';pn.scrollTop=pn.scrollHeight;}}catch(_){}};
+  window.addEventListener('error',function(e){window.__dbg('ERR: '+(e&&(e.message||e.error))+' @'+((e&&e.filename)||'')+':'+((e&&e.lineno)||''));});
+  window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason;window.__dbg('REJECT: '+((r&&(r.stack||r.message))||r));});
+  var _ce=console.error; console.error=function(){try{window.__dbg('console.error: '+Array.prototype.map.call(arguments,String).join(' '));}catch(_){}return _ce.apply(console,arguments);};
+}catch(e){}})();</script>
+<meta name="app-version" content="573d3d8edecc">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -528,28 +545,15 @@ document.addEventListener('click',async e=>{
   if(e.target.id==='install-go'&&deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; hideInstall(); }
   if(e.target.id==='install-x'){ try{localStorage.setItem('pred_install_dismissed','1');}catch(_){} hideInstall(); }
 });
-</script><script>
-(function(){
-  var tg=window.Telegram&&window.Telegram.WebApp;
-  if(!tg||!tg.platform||tg.platform==='unknown')return;
-  try{
-    tg.ready(); tg.expand();
-    var stored=null; try{stored=localStorage.getItem('pred_lang');}catch(e){}
-    if(!stored){ var lc=tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.language_code;
-      if(typeof setLang==='function') setLang(lc==='ru'?'ru':'en'); }
-    var go=document.querySelector('#go'); if(go) go.style.display='none';
-    var mb=tg.MainButton;
-    if(mb){ mb.setText(typeof t==='function'?t('btnPredict'):'Predict'); mb.show();
-      mb.onClick(function(){ if(typeof doPredict==='function') doPredict(true,true); }); }
-    window.__onLang=function(){ try{ if(mb) mb.setText(t('btnPredict')); }catch(e){} };
-    window.__onPredictDone=function(){ try{ tg.HapticFeedback.notificationOccurred('success'); }catch(e){} };
-    var wrap=document.createElement('div'); wrap.id='tgdbg';
-    var head=document.createElement('div'); head.id='tgdbg-head';
-    head.textContent='🛜 TG Mini App · app 5e63d5280c6e · '+(tg.platform||'?')+' · Bot API '+(tg.version||'?');
-    var log=document.createElement('pre'); log.id='tgdbg-log';
-    head.addEventListener('click',function(){ wrap.classList.toggle('open'); });
-    wrap.appendChild(head); wrap.appendChild(log); (document.body||document.documentElement).appendChild(wrap);
-    if(window.__DBG&&window.__DBG.length) log.textContent=window.__DBG.join('\n')+'\n';
-  }catch(e){}
-})();
-</script></body></html>
+</script><script>(function(){ var TG=window.__TG; if(!TG)return; try{
+  var stored=null; try{stored=localStorage.getItem('pred_lang');}catch(e){}
+  if(!stored&&TG.lang&&typeof setLang==='function'){ setLang(TG.lang==='ru'?'ru':'en'); }
+  window.__onPredictDone=function(){ try{ TG.haptic(); }catch(e){} };
+  var wrap=document.createElement('div'); wrap.id='tgdbg';
+  var head=document.createElement('div'); head.id='tgdbg-head';
+  head.textContent='🛜 TG Mini App · app 573d3d8edecc · '+TG.platform+' · Bot API '+(TG.version||'?');
+  var log=document.createElement('pre'); log.id='tgdbg-log';
+  head.addEventListener('click',function(){ wrap.classList.toggle('open'); });
+  wrap.appendChild(head); wrap.appendChild(log); (document.body||document.documentElement).appendChild(wrap);
+  if(window.__DBG&&window.__DBG.length) log.textContent=window.__DBG.join('\n')+'\n';
+}catch(e){} })();</script></body></html>
