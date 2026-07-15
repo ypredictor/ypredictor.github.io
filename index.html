@@ -10,7 +10,8 @@
 <meta name="twitter:title" content="Y-haplogroup predictor">
 <meta name="twitter:description" content="Online Y-DNA haplogroup predictor from FamilyTreeDNA STR markers: closest matches and predicted branch down the Y-tree in seconds. No signup.">
 <meta name="twitter:image" content="android-chrome-512x512.png">
-<meta name="app-version" content="f5d94e623b3b">
+<script>(function(){try{if(/[?#&]tgWebApp(Data|Platform|Version)=/.test(location.href)||window.TelegramWebviewProxy)document.documentElement.classList.add('tg');}catch(e){}})();</script>
+<meta name="app-version" content="1ebadb6630d3">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -73,6 +74,9 @@ td.h{font-family:ui-monospace,monospace;color:var(--acc);white-space:normal;over
 .install-txt{flex:1;font-size:13px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);background:#1a1d23;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.3s;z-index:10000}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+html.tg{--bg:var(--tg-theme-bg-color,#f6f7f9);--card:var(--tg-theme-secondary-bg-color,#ffffff);--field:var(--tg-theme-secondary-bg-color,#fbfcfd);--fg:var(--tg-theme-text-color,#1a1d23);--mut:var(--tg-theme-hint-color,#5c6672);--line:var(--tg-theme-section-separator-color,#e2e6ec);--acc:var(--tg-theme-button-color,#2563eb)}
+html.tg .card{box-shadow:none}
 @media(max-width:560px){
 .card{padding:12px 13px}
 .tablewrap{overflow-x:visible}
@@ -427,6 +431,7 @@ async function doPredict(pushUrl, scrollTo){
     const res=run(markers,topN);
     render(res);
     metrikaLog(inp.kit||"", markers, res);
+    if(window.__onPredictDone){try{window.__onPredictDone(res);}catch(_){}} 
     if(pushUrl!==false) setMarkersUrl(raw);
     if(scrollTo){ try{ $("#out").scrollIntoView({behavior:"smooth",block:"start"}); }catch(_){ $("#out").scrollIntoView(); } }
   }, 10);
@@ -484,6 +489,7 @@ function applyI18n(){
   var ru=document.querySelector('#langru'), en=document.querySelector('#langen');
   if(ru&&en){ru.classList.toggle('active',L==='ru');en.classList.toggle('active',L==='en');
     ru.setAttribute('aria-pressed',String(L==='ru'));en.setAttribute('aria-pressed',String(L==='en'));}
+  if(window.__onLang){try{window.__onLang(L);}catch(_){}} 
   if(window.__lastResult) render(window.__lastResult);
 }
 function setLang(l){L=l;try{localStorage.setItem('pred_lang',l);}catch(e){}applyI18n();}
@@ -510,4 +516,25 @@ document.addEventListener('click',async e=>{
   if(e.target.id==='install-go'&&deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; hideInstall(); }
   if(e.target.id==='install-x'){ try{localStorage.setItem('pred_install_dismissed','1');}catch(_){} hideInstall(); }
 });
+</script><script>
+(function(){
+  function inTG(){try{return /[?#&]tgWebApp(Data|Platform|Version)=/.test(location.href)||!!window.TelegramWebviewProxy;}catch(e){return false;}}
+  if(!inTG())return;
+  var s=document.createElement('script');s.src='https://telegram.org/js/telegram-web-app.js';
+  s.onload=function(){ try{
+    var tg=window.Telegram&&window.Telegram.WebApp; if(!tg)return;
+    tg.ready(); tg.expand(); document.documentElement.classList.add('tg');
+    var stored=null; try{stored=localStorage.getItem('pred_lang');}catch(e){}
+    if(!stored){ var lc=tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.language_code;
+      if(typeof setLang==='function') setLang(lc==='ru'?'ru':'en'); }
+    var go=document.querySelector('#go'); if(go) go.style.display='none';
+    var mb=tg.MainButton;
+    if(mb){ mb.setText(typeof t==='function'?t('btnPredict'):'Predict'); mb.show();
+      mb.onClick(function(){ if(typeof doPredict==='function') doPredict(true,true); }); }
+    window.__onLang=function(){ try{ if(mb) mb.setText(t('btnPredict')); }catch(e){} };
+    window.__onPredictDone=function(){ try{ tg.HapticFeedback.notificationOccurred('success'); }catch(e){} };
+  }catch(e){} };
+  s.onerror=function(){};
+  document.head.appendChild(s);
+})();
 </script></body></html>
