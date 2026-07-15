@@ -20,6 +20,7 @@
   var theme={}; try{theme=JSON.parse(decodeURIComponent((p&&p.get('tgWebAppThemeParams'))||'%7B%7D'));}catch(e){}
   var lang=''; try{var d=new URLSearchParams((p&&p.get('tgWebAppData'))||'');var u=JSON.parse(d.get('user')||'null');lang=(u&&u.language_code)||'';}catch(e){}
   var startParam=(p&&p.get('tgWebAppStartParam'))||'';
+  if(!startParam){ try{ var dd=new URLSearchParams((p&&p.get('tgWebAppData'))||''); startParam=dd.get('start_param')||''; }catch(e){} }
   function postEvent(type,data){ data=data||{}; try{
     if(window.TelegramWebviewProxy&&window.TelegramWebviewProxy.postEvent){window.TelegramWebviewProxy.postEvent(type,JSON.stringify(data));return;}
     if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.performAction){window.webkit.messageHandlers.performAction.postMessage({eventType:type,eventData:JSON.stringify(data)});return;}
@@ -35,8 +36,9 @@
   window.addEventListener('error',function(e){window.__dbg('ERR: '+(e&&(e.message||e.error))+' @'+((e&&e.filename)||'')+':'+((e&&e.lineno)||''));});
   window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason;window.__dbg('REJECT: '+((r&&(r.stack||r.message))||r));});
   var _ce=console.error; console.error=function(){try{window.__dbg('console.error: '+Array.prototype.map.call(arguments,String).join(' '));}catch(_){}return _ce.apply(console,arguments);};
+  try{ window.__dbg('launch: platform='+platform+' start='+(startParam||'-')+' hash='+String(location.hash||'').slice(0,140)); }catch(e){}
 }catch(e){}})();</script>
-<meta name="app-version" content="18ea9918f990">
+<meta name="app-version" content="89cd2e370bea">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -566,7 +568,7 @@ document.addEventListener('click',async e=>{
   window.__onPredictDone=function(){ try{ TG.haptic(); }catch(e){} };
   var wrap=document.createElement('div'); wrap.id='tgdbg';
   var head=document.createElement('div'); head.id='tgdbg-head';
-  head.textContent='🛜 TG Mini App · app 18ea9918f990 · '+TG.platform+' · Bot API '+(TG.version||'?');
+  head.textContent='🛜 TG Mini App · app 89cd2e370bea · '+TG.platform+' · start '+(TG.startParam||'-');
   var log=document.createElement('pre'); log.id='tgdbg-log';
   head.addEventListener('click',function(){ wrap.classList.toggle('open'); });
   wrap.appendChild(head); wrap.appendChild(log); (document.body||document.documentElement).appendChild(wrap);
