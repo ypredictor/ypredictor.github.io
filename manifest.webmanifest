@@ -1,6 +1,7 @@
 {
   "name": "Y-haplogroup predictor",
   "short_name": "Y-DNA",
+  "id": "y-haplogroup-predictor",
   "start_url": ".",
   "scope": "./",
   "display": "standalone",
