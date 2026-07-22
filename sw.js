@@ -1,6 +1,6 @@
-const APP_VERSION="edf11c232bfb";
+const APP_VERSION="d693b988b25f";
 const CACHE='pred-cache-v2';
-const ASSETS=['index.html','manifest.webmanifest','version.json'];
+const ASSETS=['index.html','corpus.gz','manifest.webmanifest','version.json'];
 const shouldCache=function shouldCache(resp) {
   const OK_TYPES = new Set(["basic", "default", "cors"]);
   return !!resp && resp.ok === true && resp.status === 200 && OK_TYPES.has(resp.type);
@@ -19,12 +19,13 @@ async function checkUpdate(){
     const {version}=await resp.clone().json();
     const html=await fetch('index.html',{cache:'no-store'}); if(!shouldCache(html))return;
     await cache.put('version.json',resp.clone()); await cache.put('index.html',html.clone());
-    if(version!==APP_VERSION){ const cs=await self.clients.matchAll(); cs.forEach(c=>c.postMessage({type:'updated',version})); }
+    if(version!==APP_VERSION){ const gz=await fetch('corpus.gz',{cache:'no-store'}); if(shouldCache(gz)) await cache.put('corpus.gz',gz.clone()); const cs=await self.clients.matchAll(); cs.forEach(c=>c.postMessage({type:'updated',version})); }
   }catch(e){}
 }
 self.addEventListener('fetch',e=>{ const u=new URL(e.request.url);
   if(e.request.mode==='navigate'||u.pathname.endsWith('/')||u.pathname.endsWith('index.html')){ e.respondWith(swr('index.html')); return; }
   if(u.pathname.endsWith('version.json')){ e.respondWith(swr('version.json')); return; }
+  if(u.pathname.endsWith('corpus.gz')){ e.respondWith(caches.open(CACHE).then(c=>c.match('corpus.gz',{ignoreSearch:true})).then(r=>r||fetch('corpus.gz'))); return; }
 });
 self.addEventListener('message',e=>{ if(e.data==='check-update') checkUpdate(); });
 self.addEventListener('activate',()=>checkUpdate());
