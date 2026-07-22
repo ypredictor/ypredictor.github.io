@@ -1,5 +1,5 @@
 {
-  "name": "Y-haplogroup predictor",
+  "name": "Предиктор гаплогруппы Y-DNA",
   "short_name": "Y-DNA",
   "id": "y-haplogroup-predictor",
   "start_url": ".",
@@ -7,7 +7,7 @@
   "display": "standalone",
   "background_color": "#f6f7f9",
   "theme_color": "#2563eb",
-  "lang": "en",
+  "lang": "ru",
   "dir": "ltr",
   "icons": [
     {
