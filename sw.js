@@ -1,6 +1,7 @@
-const APP_VERSION="cd30748a7dc5";
-const CACHE='pred-cache-v2';
+const APP_VERSION="9200b5806841";
+const CACHE='pred-cache-v3';
 const ASSETS=['index.html','corpus.gz','manifest.webmanifest','version.json'];
+const PASSTHRU=/\/(sitemap\.xml|robots\.txt|google[0-9a-f]+\.html)$/;
 const shouldCache=function shouldCache(resp) {
   const OK_TYPES = new Set(["basic", "default", "cors"]);
   return !!resp && resp.ok === true && resp.status === 200 && OK_TYPES.has(resp.type);
@@ -23,6 +24,7 @@ async function checkUpdate(){
   }catch(e){}
 }
 self.addEventListener('fetch',e=>{ const u=new URL(e.request.url);
+  if(PASSTHRU.test(u.pathname)){ return; }
   if(e.request.mode==='navigate'||u.pathname.endsWith('/')||u.pathname.endsWith('index.html')){ e.respondWith(swr('index.html')); return; }
   if(u.pathname.endsWith('version.json')){ e.respondWith(swr('version.json')); return; }
   if(u.pathname.endsWith('corpus.gz')){ e.respondWith(caches.open(CACHE).then(c=>c.match('corpus.gz',{ignoreSearch:true})).then(r=>r||fetch('corpus.gz'))); return; }
