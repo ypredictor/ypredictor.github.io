@@ -2,11 +2,20 @@
 
 **A free online tool for DNA genealogy: it predicts your Y-chromosome haplogroup from Y-STR markers and finds your closest matches in a reference corpus.**
 
+
+
 *Read this in other languages: [Русский](README.ru.md).*
 
 ### 🔗 Open: **[ypredictor.github.io](https://ypredictor.github.io/)**
 
 Paste the STR markers from your FamilyTreeDNA test and get a predicted Y-tree branch and a list of the closest related haplotypes with an estimate of the age of the common ancestor (TMRCA). Everything is computed **right in your browser**: no registration, no uploading your data to a server.
+
+
+## Demo
+
+https://github.com/user-attachments/assets/8dc3ce12-ab0c-49af-b5c2-490f81381e1b
+
+<sub>Mobile view: paste STR markers → run the prediction → open the match tree and walk the branch → collapse the tree → tap through the matches → then search by a Kit number from a completely different haplogroup.</sub>
 
 ---
 
@@ -125,6 +134,7 @@ The numbers are generated from the current corpus (2026-07) by the project's `em
 - **TMRCA** — an estimate of the time to the common ancestor by the GMRCA method with extrapolation for distant pairs; neighbors are sorted precisely by age, not by "raw" distance.
 - **Prediction algorithm** — a plurality descent down the tree: at each node the branch with the largest weight of neighbor votes is chosen; the descent continues while the branch has enough support and margin over the second-best (the `minSupport` / `margin` / `topK` thresholds). Under a calibrated clade only its members vote, with the clade's parameters (clade-anchored).
 - **Voting and non-voting neighbors.** Only the **closest** neighbors (top-K) vote for a branch, and the closer the haplotype the heavier the vote; distant neighbors are visible in the list but do not vote for a branch. Part of the corpus is marked with a **"predictor only"** badge — these are reference kits from donor projects: they add votes and widen coverage but are not counted as full matches. Some reference groups are deliberately **excluded from voting** (a methodological decision, so as not to bias the estimate), while still remaining visible among the neighbors. Domain rules apply too — for example, on a "bare" broad result an incompatible sub-branch does not vote. Haplotypes that are too short (fewer than ~14 markers) do not participate as matches: the distance to them is too noisy.
+
 - **Calibration parameters** (minSupport / margin / topK): J1-Z1842 `5 / 2.5 / 15` · J2-M172 `5 / 4 / 15` · R1b-M269 `5 / 2.5 / 10` · R1a-M417 `5 / 4 / 20` · G2-P15 `4 / 2.5 / 10`.
 - **Corpus** — over 10,000 kits (haplogroup + markers + precomputed path), gzip-compressed and loaded as a separate file; it contains no personal names, only a project label.
 - **PWA** — the service worker caches the shell and the corpus with the stale-while-revalidate scheme; the build version = a content hash of the data and code, and updates are pulled in the background.
