@@ -2,11 +2,23 @@
 
 **Бесплатный онлайн-инструмент для ДНК-генеалогии: предсказывает гаплогруппу Y-хромосомы по Y-STR-маркерам и находит ближайших совпаденцев в справочном корпусе.**
 
-*Читать на других языках: [English](README.md).*
+🌐 Language / Язык: [English](README.md) | **Русский**
+
+[![Pages build](https://github.com/ypredictor/ypredictor.github.io/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/ypredictor/ypredictor.github.io/actions/workflows/pages/pages-build-deployment)
+[![PWA version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fypredictor.github.io%2Fversion.json&query=%24.version&label=PWA&color=blueviolet)](https://ypredictor.github.io/)
+[![Last commit](https://img.shields.io/github/last-commit/ypredictor/ypredictor.github.io?label=updated)](https://github.com/ypredictor/ypredictor.github.io/commits)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fypredictor.github.io%2F&label=site)](https://ypredictor.github.io/)
+[![License: MIT](https://img.shields.io/github/license/ypredictor/ypredictor.github.io)](LICENSE)
 
 ### 🔗 Открыть: **[ypredictor.github.io](https://ypredictor.github.io/)**
 
 Вставьте STR-маркеры из теста FamilyTreeDNA — получите предсказанную ветвь Y-дерева и список ближайших родственных гаплотипов с оценкой возраста общего предка (TMRCA). Всё считается **прямо в браузере**: ни регистрации, ни загрузки данных на сервер.
+
+## Демо
+
+https://github.com/user-attachments/assets/8dc3ce12-ab0c-49af-b5c2-490f81381e1b
+
+<sub>Мобильный вид: вставка STR-маркеров → запуск предикта → открытие дерева совпаденцев и проход по ветке → сворачивание дерева → клик по совпаденцам → затем поиск по Kit-номеру из совсем другой гаплогруппы.</sub>
 
 ---
 
