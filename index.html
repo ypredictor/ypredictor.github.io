@@ -48,7 +48,7 @@
   var _ce=console.error; console.error=function(){try{window.__dbg('console.error: '+Array.prototype.map.call(arguments,String).join(' '));}catch(_){}return _ce.apply(console,arguments);};
   try{ window.__dbg('launch: platform='+platform+' start='+(startParam||'-')+' hash='+String(location.hash||'').slice(0,140)); }catch(e){}
 }catch(e){}})();</script>
-<meta name="app-version" content="1.1.0+08c8d366">
+<meta name="app-version" content="1.1.0+e372abe5">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -220,6 +220,8 @@ window.__I18N={
   "ru": {
     "appTitle": "Предиктор гаплогруппы Y-DNA",
     "metaDesc": "Онлайн-предиктор гаплогруппы Y-DNA по STR-маркерам FamilyTreeDNA: ближайшие совпаденцы и предсказанная ветвь по Y-дереву за секунды. Без регистрации.",
+    "metaResultTitle": "{haplo} — предсказанная гаплогруппа Y-DNA · уверенность {conf}%",
+    "metaResultDesc": "Предсказанная гаплогруппа Y-DNA: {haplo} (глубина {depth} узлов, уверенность {conf}%). Ближайшие STR-совпаденцы: {matches}.",
     "introLead": "Вставь STR-маркеры Y-DNA (FamilyTreeDNA) — предиктор найдёт ближайших совпаденцев в корпусе и предскажет ветвь гаплогруппы, спускаясь по Y-дереву голосованием соседей.",
     "introCaveat": "Предсказание вероятностное. На неглубоких, редких или пограничных ветвях возможны неточности — это нормально для оценки по STR. Точную гаплогруппу подтверждает только SNP-тест (BigY и аналоги).",
     "markersLabel": "STR-маркеры (пробел/запятая/перенос; палиндромы вида {ex}) — или Kit-номер из корпуса",
@@ -292,6 +294,8 @@ window.__I18N={
   "en": {
     "appTitle": "Y-haplogroup predictor",
     "metaDesc": "Online Y-DNA haplogroup predictor from FamilyTreeDNA STR markers: closest matches and predicted branch down the Y-tree in seconds. No signup.",
+    "metaResultTitle": "{haplo} — predicted Y-DNA haplogroup · {conf}% confidence",
+    "metaResultDesc": "Predicted Y-DNA haplogroup: {haplo} (depth {depth} nodes, {conf}% confidence). Closest Y-STR matches: {matches}.",
     "introLead": "Paste your Y-DNA STR markers (FamilyTreeDNA) — the predictor finds your closest matches in the corpus and predicts a haplogroup branch by descending the Y-tree through neighbor voting.",
     "introCaveat": "The prediction is probabilistic. On shallow, rare or borderline branches errors are possible — that is normal for STR-based estimates. Only a SNP test (BigY and similar) confirms the exact haplogroup.",
     "markersLabel": "Y-DNA STR markers (space/comma/newline; palindromes like {ex}) — or a corpus Kit number",
@@ -376,6 +380,60 @@ var L=(function(){try{return localStorage.getItem('pred_lang')||detectLang(navig
 function t(k){return translate(window.__I18N,L,k);}
 function fmt(k,vars){var s=t(k);for(var p in vars){s=s.split('{'+p+'}').join(vars[p]);}return s;}
 </script><script>
+
+
+
+
+function tokenizeMarkers(raw) {
+  return String(raw == null ? "" : raw)
+    .trim()
+    .split(/[\s,;]+/)
+    .filter(Boolean);
+}
+function normalizeMarkers(raw) {
+  return tokenizeMarkers(raw).join(" ");
+}
+
+
+
+
+
+function resultMetaText(result, dict) {
+  var r = result || {};
+  var matches = (r.matches || [])
+    .slice(0, 3)
+    .map(function (m) {
+      return m.haplo + " · " + m.project + " · ~" + Math.round(m.tmrca) + " " + dict.years;
+    })
+    .join(" · ");
+  var vars = {
+    haplo: r.haplo,
+    depth: r.depth,
+    conf: Math.round((r.confidence || 0) * 100),
+    matches: matches,
+  };
+  var sub = function (s) {
+    return String(s).replace(/\{(\w+)\}/g, function (whole, k) {
+      return k in vars ? vars[k] : whole;
+    });
+  };
+  return { title: sub(dict.metaResultTitle), description: sub(dict.metaResultDesc) };
+}
+function setJsonLdDescription(ld, description) {
+  if (!ld || typeof ld !== "object") return ld;
+  if (Array.isArray(ld["@graph"])) {
+    return Object.assign({}, ld, {
+      "@graph": ld["@graph"].map(function (n) {
+        return setJsonLdDescription(n, description);
+      }),
+    });
+  }
+  if (ld["@type"] === "WebApplication") {
+    return Object.assign({}, ld, { description: description });
+  }
+  return ld;
+}
+
 let D, RATES, C, maxLen, predExclude = new Set();
 let KITMAP = new Map(); 
 let lastShare = ""; 
@@ -511,7 +569,7 @@ var ready = (async ()=>{
   predExclude = new Set(D.predExclude);
   document.querySelector("#mkhint").textContent=fmt("mkhint",{order:D.markerNames.slice(0,12).join(", "), n:D.builtKits});
 })();
-function parseInput(raw){ return String(raw||"").trim().split(/[\s,;]+/).filter(t=>t!==""); }
+function parseInput(raw){ return tokenizeMarkers(raw); }
 
 
 
@@ -532,24 +590,42 @@ function run(markers, topN, selfKit){
   
   
   const self = selfKit ? String(selfKit).toUpperCase() : "";
-  const scored=[]; let selfHaplo="";
+  const scored=[]; let selfHaplo="", selfRow=null;
   for(const c of C){
-    if(self && String(c.kit).toUpperCase()===self){ selfHaplo=c.haplo||""; continue; } 
+    if(self && String(c.kit).toUpperCase()===self){ selfHaplo=c.haplo||""; selfRow=c; continue; } 
     const r=findHaploDistPrep(tp,c.prep,rates); if(r.numData===0)continue;
     const gd=r.infDist/(r.numData+1e-6); const tmrca=tmrcaPoint(r.numData,r.infDist,r.muRate);
     scored.push({kit:c.kit,sheet:c.sheet,po:c.po,markers:c.markers,haplo:c.haplo,bc:c.bc,pbc:c.pbc,clmask:c.clmask,mc:c.mc,bigy:c.bigy,gd,tmrca,infDist:r.infDist,numData:r.numData});
   }
   scored.sort((a,b)=>a.tmrca!==b.tmrca?a.tmrca-b.tmrca:a.gd!==b.gd?a.gd-b.gd:String(a.kit).localeCompare(String(b.kit)));
-  let opts={}, cladeRoot=null, proxyKit=null;
-  for(const nb of scored){ if(!nb.haplo)continue;
-    for(const root of D.cladeRoots){ if(cladeFlag(nb,root)){ opts=Object.assign({cladeFilter:root},D.cladeOpts[root]||{}); cladeRoot=root; proxyKit=nb.kit; break; } }
-    break;
+  
+  
+  
+  
+  
+  if(!selfRow){
+    
+    
+    
+    const myAlleles = findHaploDistPrep(tp, tp, rates).numData;
+    selfRow = scored.find(n=>n.infDist===0 && n.numData===myAlleles) || null;
+    if(selfRow) selfHaplo = selfRow.haplo||"";
   }
+  
+  
+  
+  
+  
+  
+  let opts={}, cladeRoot=null, proxyKit=null;
+  const cladeFromRow=(row,proxy)=>{ for(const root of D.cladeRoots){ if(cladeFlag(row,root)){ opts=Object.assign({cladeFilter:root},D.cladeOpts[root]||{}); cladeRoot=root; proxyKit=proxy; return true; } } return false; };
+  if(selfRow){ cladeFromRow(selfRow, selfRow.kit); }
+  else { for(const nb of scored){ if(!nb.haplo)continue; cladeFromRow(nb, nb.kit); break; } }
   
   
   const exCl = bareExcl(selfHaplo);
   if(exCl.length) opts=Object.assign({},opts,{excludeClades:exCl});
-  const voters = scored.filter(n=>n.bc && !predExclude.has(n.sheet));
+  const voters = scored.filter(n=>n.bc && n!==selfRow && !predExclude.has(n.sheet));
   
   
   
@@ -709,13 +785,14 @@ function metrikaLog(kit, markers, res){
   }catch(_){}
 }
 async function doPredict(pushUrl, scrollTo){
-  const raw=$("#mk").value;
+  const raw=normalizeMarkers($("#mk").value);
+  $("#mk").value=raw;
   await ready; 
   const inp=resolveInput(raw);
-  if(inp.notFoundKit){ $("#out").innerHTML='<div class="card err">'+fmt("errKitNotFound",{kit:esc(inp.notFoundKit)})+'</div>'; return; }
+  if(inp.notFoundKit){ $("#out").innerHTML='<div class="card err">'+fmt("errKitNotFound",{kit:esc(inp.notFoundKit)})+'</div>'; restoreSeoDefaults(); return; }
   const markers=inp.markers;
   const topN=Math.min(Math.max(Number($("#topn").value)||30,1),100);
-  if(!markers.length){ $("#out").innerHTML='<div class="card err">'+t("errNoMarkers")+'</div>'; return; }
+  if(!markers.length){ $("#out").innerHTML='<div class="card err">'+t("errNoMarkers")+'</div>'; restoreSeoDefaults(); return; }
   $("#out").innerHTML='<div class="card mut">'+t("calculating")+'</div>';
   setTimeout(()=>{
     const res=run(markers,topN,inp.kit);
@@ -736,6 +813,66 @@ ready.then(()=>{
   else { try{ um=new URLSearchParams(window.location.search).get("markers"); }catch(_){} }
   if(um){ $("#mk").value=um; doPredict(false, true); }
 });
+
+const SEO_DEFAULTS=(function(){
+  const g=(sel,attr)=>{const el=document.querySelector(sel);return el?el.getAttribute(attr):null;};
+  return {
+    title:document.title,
+    description:g('meta[name="description"]','content'),
+    ogTitle:g('meta[property="og:title"]','content'),
+    ogDesc:g('meta[property="og:description"]','content'),
+    twTitle:g('meta[name="twitter:title"]','content'),
+    twDesc:g('meta[name="twitter:description"]','content'),
+    canonical:g('link[rel="canonical"]','href'),
+    ogUrl:g('meta[property="og:url"]','content'),
+    jsonld:Array.prototype.map.call(document.querySelectorAll('script[type="application/ld+json"]'),s=>s.textContent)
+  };
+})();
+function upsertMeta(keyAttr,keyVal,val){
+  let el=document.head.querySelector('meta['+keyAttr+'="'+keyVal+'"]');
+  if(!el){el=document.createElement('meta');el.setAttribute(keyAttr,keyVal);document.head.appendChild(el);}
+  el.setAttribute('content',val);
+}
+function upsertCanonical(href){
+  let el=document.head.querySelector('link[rel="canonical"]');
+  if(!el){el=document.createElement('link');el.setAttribute('rel','canonical');document.head.appendChild(el);}
+  el.setAttribute('href',href);
+}
+function updateResultSeo(j){
+  const p=j&&j.prediction;
+  if(!p){ restoreSeoDefaults(); return; }
+  const matches=(j.neighbors||[]).slice(0,3).map(n=>({
+    haplo:displayShort(n.pbc||n.bc||n.haplo), project:n.sheet, tmrca:n.tmrca }));
+  const meta=resultMetaText(
+    { haplo:displayShort(p.haplogroup), depth:p.depth, confidence:p.confidence, confident:p.confident, matches:matches },
+    { metaResultTitle:t('metaResultTitle'), metaResultDesc:t('metaResultDesc'), years:t('years') }
+  );
+  document.title=meta.title;
+  upsertMeta('name','description',meta.description);
+  upsertMeta('property','og:title',meta.title);
+  upsertMeta('property','og:description',meta.description);
+  upsertMeta('name','twitter:title',meta.title);
+  upsertMeta('name','twitter:description',meta.description);
+  const url=location.href;
+  upsertCanonical(url);
+  upsertMeta('property','og:url',url);
+  document.querySelectorAll('script[type="application/ld+json"]').forEach(s=>{
+    try{ const ld=JSON.parse(s.textContent); const out=setJsonLdDescription(ld,meta.description);
+      if(out!==ld) s.textContent=JSON.stringify(out); }catch(e){}
+  });
+}
+function restoreSeoDefaults(){
+  document.title=SEO_DEFAULTS.title;
+  if(SEO_DEFAULTS.description!=null) upsertMeta('name','description',SEO_DEFAULTS.description);
+  if(SEO_DEFAULTS.ogTitle!=null) upsertMeta('property','og:title',SEO_DEFAULTS.ogTitle);
+  if(SEO_DEFAULTS.ogDesc!=null) upsertMeta('property','og:description',SEO_DEFAULTS.ogDesc);
+  if(SEO_DEFAULTS.twTitle!=null) upsertMeta('name','twitter:title',SEO_DEFAULTS.twTitle);
+  if(SEO_DEFAULTS.twDesc!=null) upsertMeta('name','twitter:description',SEO_DEFAULTS.twDesc);
+  if(SEO_DEFAULTS.canonical!=null) upsertCanonical(SEO_DEFAULTS.canonical);
+  if(SEO_DEFAULTS.ogUrl!=null) upsertMeta('property','og:url',SEO_DEFAULTS.ogUrl);
+  const scripts=document.querySelectorAll('script[type="application/ld+json"]');
+  SEO_DEFAULTS.jsonld.forEach((txt,i)=>{ if(scripts[i]) scripts[i].textContent=txt; });
+}
 function render(j){
   window.__lastResult=j; 
   const p=j.prediction, lbl=D.cladeLabels||{}; 
@@ -781,6 +918,7 @@ function render(j){
     (p&&D.treeOn?'<div id="treebox"></div>':'')+'</div>'+
     '<div class="card"><label>'+t("neighborsTitle")+'</label><div class="tablewrap"><table><thead><tr>'+
     '<th>'+t("thKit")+'</th><th>'+t("thProject")+'</th><th>'+t("thHaplo")+'</th><th>'+t("thTmrca")+'</th><th>'+t("thDiff")+'</th><th>'+t("thMarkers")+'</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  updateResultSeo(j); 
 }
 
 function applyI18n(){
@@ -995,7 +1133,7 @@ document.addEventListener('click',async e=>{
   window.__onPredictDone=function(){ try{ TG.haptic(); }catch(e){} };
   var wrap=document.createElement('div'); wrap.id='tgdbg';
   var head=document.createElement('div'); head.id='tgdbg-head';
-  head.textContent='🛜 TG Mini App · app 1.1.0+08c8d366 · '+TG.platform+' · start '+(TG.startParam||'-');
+  head.textContent='🛜 TG Mini App · app 1.1.0+e372abe5 · '+TG.platform+' · start '+(TG.startParam||'-');
   var log=document.createElement('pre'); log.id='tgdbg-log';
   head.addEventListener('click',function(){ wrap.classList.toggle('open'); });
   wrap.appendChild(head); wrap.appendChild(log); (document.body||document.documentElement).appendChild(wrap);
