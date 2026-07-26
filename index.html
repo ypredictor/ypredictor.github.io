@@ -48,7 +48,7 @@
   var _ce=console.error; console.error=function(){try{window.__dbg('console.error: '+Array.prototype.map.call(arguments,String).join(' '));}catch(_){}return _ce.apply(console,arguments);};
   try{ window.__dbg('launch: platform='+platform+' start='+(startParam||'-')+' hash='+String(location.hash||'').slice(0,140)); }catch(e){}
 }catch(e){}})();</script>
-<meta name="app-version" content="1.1.1+e2739bdb">
+<meta name="app-version" content="1.1.1+e4c9311c">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -189,7 +189,7 @@ td[data-label='diff/cmp']::before{content:' · diff/cmp ';color:var(--mut)}
 td[data-label='Маркеров']::before{content:' · ';color:var(--mut)}
 .po{display:inline;padding:0 3px}
 }</style></head><body>
-<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+e2739bdb</div>
+<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+e4c9311c</div>
 <noscript><div class="card err">Для работы предиктора нужен JavaScript — включите его в браузере и обновите страницу.</div></noscript>
 <div id="install" class="install" style="display:none">
   <span class="install-txt"></span>
@@ -534,12 +534,18 @@ function bcHasSeg(bc,snp){ return String(bc||"").split("->").some(s=>segTerm(s)=
 function labTerm(h){ const segs=String(h||"").split("->").filter(Boolean); return segTerm(segs[segs.length-1]||h); }
 function bareExcl(h){ const t=labTerm(h); const out=[]; for(const r of (D.bareRules||[])){ if((r.bareTerminals||[]).includes(t)) out.push.apply(out,(r.exclude||[])); } return out; }
 function predict(voters,opts){
-  const o=Object.assign({minSupport:3,margin:1.2,topK:10,weightK:0.05,cladeFilter:null,excludeClades:null},opts);
+  const o=Object.assign({minSupport:3,margin:1.2,topK:10,weightK:0.05,cladeFilter:null,excludeClades:null,excludeOverrideFrac:0.5},opts);
   const score=new Map(),support=new Map(),children=new Map(); let total=0;
+  const nearest=(a)=>o.topK>0&&a.length>o.topK?a.slice().sort((x,y)=>x.gd-y.gd).slice(0,o.topK):a;
   let vs=voters.filter(v=>v.bc);
   if(o.cladeFilter) vs=vs.filter(v=>cladeFlag(v,o.cladeFilter));
-  if(o.excludeClades&&o.excludeClades.length) vs=vs.filter(v=>!o.excludeClades.some(snp=>bcHasSeg(v.bc,snp)));
-  if(o.topK>0&&vs.length>o.topK) vs=vs.slice().sort((a,b)=>a.gd-b.gd).slice(0,o.topK);
+  
+  if(o.excludeClades&&o.excludeClades.length){
+    const top=nearest(vs);
+    const active=o.excludeClades.filter(snp=>{ if(!top.length)return true; const under=top.filter(v=>bcHasSeg(v.bc,snp)).length; return under<=top.length*o.excludeOverrideFrac; });
+    if(active.length) vs=vs.filter(v=>!active.some(snp=>bcHasSeg(v.bc,snp)));
+  }
+  vs=nearest(vs);
   vs.forEach((nb,i)=>{
     const prefixes=splitPrefixes(nb.bc); if(!prefixes.length)return;
     const gd=nb.gd==null?null:Number(nb.gd); const w=gd!=null?1/(gd+o.weightK):1/(i+1); total+=w;
@@ -1129,7 +1135,7 @@ document.addEventListener('click',async e=>{
   window.__onPredictDone=function(){ try{ TG.haptic(); }catch(e){} };
   var wrap=document.createElement('div'); wrap.id='tgdbg';
   var head=document.createElement('div'); head.id='tgdbg-head';
-  head.textContent='🛜 TG Mini App · app 1.1.1+e2739bdb · '+TG.platform+' · start '+(TG.startParam||'-');
+  head.textContent='🛜 TG Mini App · app 1.1.1+e4c9311c · '+TG.platform+' · start '+(TG.startParam||'-');
   var log=document.createElement('pre'); log.id='tgdbg-log';
   head.addEventListener('click',function(){ wrap.classList.toggle('open'); });
   wrap.appendChild(head); wrap.appendChild(log); (document.body||document.documentElement).appendChild(wrap);
