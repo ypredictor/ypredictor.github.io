@@ -48,7 +48,7 @@
   var _ce=console.error; console.error=function(){try{window.__dbg('console.error: '+Array.prototype.map.call(arguments,String).join(' '));}catch(_){}return _ce.apply(console,arguments);};
   try{ window.__dbg('launch: platform='+platform+' start='+(startParam||'-')+' hash='+String(location.hash||'').slice(0,140)); }catch(e){}
 }catch(e){}})();</script>
-<meta name="app-version" content="1.1.0+e372abe5">
+<meta name="app-version" content="1.1.0+456cfcf0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -186,12 +186,7 @@ td[data-label='TMRCA']::before{content:'TMRCA ';color:var(--mut)}
 td[data-label='diff/cmp']::before{content:' · diff/cmp ';color:var(--mut)}
 td[data-label='Маркеров']::before{content:' · ';color:var(--mut)}
 .po{display:inline;padding:0 3px}
-}</style><script type="text/javascript">
-(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
-ym(110493999,"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true});
-window.__YM_ID=110493999;
-</script>
-<noscript><div><img src="https://mc.yandex.ru/watch/110493999" style="position:absolute;left:-9999px;" alt="" /></div></noscript></head><body>
+}</style></head><body>
 <div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1>
 <div id="install" class="install" style="display:none">
   <span class="install-txt"></span>
@@ -767,23 +762,6 @@ function setMarkersUrl(raw){
   try{ const u=new URL(window.location.href); u.searchParams.set("markers", raw);
     history.replaceState(null,"", u.pathname+u.search+u.hash); }catch(_){}
 }
-
-
-
-function metrikaLog(kit, markers, res){
-  try{
-    if(!window.__YM_ID || typeof ym!=='function') return;
-    const p=res&&res.prediction;
-    ym(window.__YM_ID,'reachGoal','predict',{
-      kit: kit||'',
-      markers: (markers||[]).join(' '),
-      clade: (res&&res.cladeRoot)||'',
-      haplo: p?p.haplogroup:'',
-      depth: p?p.depth:0,
-      matched: res?res.matched:0
-    });
-  }catch(_){}
-}
 async function doPredict(pushUrl, scrollTo){
   const raw=normalizeMarkers($("#mk").value);
   $("#mk").value=raw;
@@ -797,7 +775,6 @@ async function doPredict(pushUrl, scrollTo){
   setTimeout(()=>{
     const res=run(markers,topN,inp.kit);
     render(res);
-    metrikaLog(inp.kit||"", markers, res);
     if(window.__onPredictDone){try{window.__onPredictDone(res);}catch(_){}} 
     if(pushUrl!==false) setMarkersUrl(raw);
     if(scrollTo){ try{ $("#out").scrollIntoView({behavior:"smooth",block:"start"}); }catch(_){ $("#out").scrollIntoView(); } }
@@ -1133,7 +1110,7 @@ document.addEventListener('click',async e=>{
   window.__onPredictDone=function(){ try{ TG.haptic(); }catch(e){} };
   var wrap=document.createElement('div'); wrap.id='tgdbg';
   var head=document.createElement('div'); head.id='tgdbg-head';
-  head.textContent='🛜 TG Mini App · app 1.1.0+e372abe5 · '+TG.platform+' · start '+(TG.startParam||'-');
+  head.textContent='🛜 TG Mini App · app 1.1.0+456cfcf0 · '+TG.platform+' · start '+(TG.startParam||'-');
   var log=document.createElement('pre'); log.id='tgdbg-log';
   head.addEventListener('click',function(){ wrap.classList.toggle('open'); });
   wrap.appendChild(head); wrap.appendChild(log); (document.body||document.documentElement).appendChild(wrap);
