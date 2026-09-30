@@ -151,6 +151,10 @@ https://github.com/user-attachments/assets/8dc3ce12-ab0c-49af-b5c2-490f81381e1b
 - [ISOGG Y-DNA Haplogroup Tree](https://isogg.org/tree/) — консенсусное дерево ISOGG
 - [FamilyTreeDNA Discover](https://discover.familytreedna.com/) — публичное гаплодерево и STR-ресурсы
 
+## Родственный проект: ftdnastat
+
+[ftdnastat.github.io](https://ftdnastat.github.io/ru/) показывает статистику гаплогрупп Y-ДНК и мтДНК по странам, регионам и народам по публичным деревьям FamilyTreeDNA и YFull. Флаги стран в таблице совпаденцев и в дереве результата ведут на страницу Y-ДНК страны там (`?lang=` сохраняет язык интерфейса), а строка «География совпаденцев» под голосами суммирует основные страны голосующих. Рядом с приложением лежит `predictor-corpus.json` — размер корпуса по странам и проектам FTDNA; ftdnastat берёт его для карточек «Проверить свою гаплогруппу».
+
 ---
 
 ## Благодарности

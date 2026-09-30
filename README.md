@@ -152,6 +152,10 @@ Haplogroup names and Y-tree topology follow established phylogenetic sources:
 - [ISOGG Y-DNA Haplogroup Tree](https://isogg.org/tree/) — the ISOGG consensus tree
 - [FamilyTreeDNA Discover](https://discover.familytreedna.com/) — a public haplotree and STR resources
 
+## Sister project: ftdnastat
+
+[ftdnastat.github.io](https://ftdnastat.github.io/en/) shows Y-DNA and mtDNA haplogroup statistics by country, region and people from the public FamilyTreeDNA and YFull trees. Country flags in the match table and in the result tree link to the country's Y-DNA page there (`?lang=` keeps the interface language), and a "geography of matches" line under the votes sums the top countries among the voters. `predictor-corpus.json` next to the app lists the corpus size per country and per FTDNA project; ftdnastat reads it for its "test your own haplogroup" cards.
+
 ---
 
 ## Acknowledgments
