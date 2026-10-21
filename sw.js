@@ -1,4 +1,4 @@
-const APP_VERSION="1.1.1+2610211220-24c3c8a9";
+const APP_VERSION="1.1.1+2610211516-1c95746d";
 const CACHE='pred-cache-v3';
 const ASSETS=['index.html','corpus.gz','manifest.webmanifest','version.json','predictor-tree.json.gz'];
 const PASSTHRU=/\/(sitemap\.xml|robots\.txt|google[0-9a-f]+\.html)$/;
