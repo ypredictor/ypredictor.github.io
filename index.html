@@ -473,7 +473,7 @@ var translate=function translate(strings, lang, key) {
 var L=(function(){var q=null;try{q=String(new URLSearchParams(location.search).get('lang')||'').toLowerCase();}catch(e){} if(q==='ru'||q==='en'){try{localStorage.setItem('pred_lang',q);}catch(e){} try{var u=new URL(location.href);u.searchParams.delete('lang');history.replaceState(null,'',u.pathname+u.search+u.hash);}catch(e){} return q;} try{return localStorage.getItem('pred_lang')||detectLang(navigator.language);}catch(e){return detectLang(navigator.language);}})();
 var ftdnastatUrl=function ftdnastatUrl(lang, slug) {
   const l = lang === "ru" ? "ru" : "en";
-  return "https://ftdnastat.github.io/" + l + "/c/" + encodeURIComponent(String(slug)) + "/y/";
+  return "https://ftdnastat.github.io/" + l + "/c/" + encodeURIComponent(String(slug)) + "/#y";
 };
 var topCcCounts=function topCcCounts(rows, k) {
   const counts = new Map();
