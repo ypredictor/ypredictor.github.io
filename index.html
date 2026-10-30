@@ -99,7 +99,7 @@
 }
 </script>
 
-<meta name="app-version" content="1.1.1+2610300920-7ab5082a">
+<meta name="app-version" content="1.1.1+2610301223-30b61feb">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -267,7 +267,7 @@ td.dc::before{content:' · ' attr(data-label) ' ';color:var(--mut)}
 td.mk::before{content:' · ';color:var(--mut)}
 .po{display:inline;padding:0 3px}
 }</style></head><body>
-<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2610300920-7ab5082a</div>
+<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2610301223-30b61feb</div>
 <noscript><div class="card err">Для работы предиктора нужен JavaScript — включите его в браузере и обновите страницу.</div></noscript>
 <div id="install" class="install" style="display:none">
   <span class="install-txt"></span>
@@ -633,6 +633,17 @@ function bcHasSeg(bc,snp){ return String(bc||"").split("->").some(s=>segTerm(s)=
 
 function labTerm(h){ const segs=String(h||"").split("->").filter(Boolean); return segTerm(segs[segs.length-1]||h); }
 function bareExcl(h){ const t=labTerm(h); const out=[]; for(const r of (D.bareRules||[])){ if((r.bareTerminals||[]).includes(t)) out.push.apply(out,(r.exclude||[])); } return out; }
+
+function holdOnLine(plain,line,voters,opts){
+  const L=String(line||"").split("->");
+  if(!plain||L.length<2)return plain;
+  const pre=(a,b)=>a.length<=b.length&&a.every((x,i)=>x===b[i]), below=(p)=>pre(L,p.haplogroup.split("->"));
+  const own={haplogroup:line,depth:L.length,support:0,score:0,total:plain.total,confidence:1,confident:true};
+  if(pre(plain.haplogroup.split("->"),L))return below(plain)?plain:own;
+  if(below(plain))return plain;
+  const anchored=predict(voters.filter(v=>v.bc&&pre(L,v.bc.split("->"))),opts);
+  return anchored&&below(anchored)?anchored:own;
+}
 function predict(voters,opts){
   const o=Object.assign({minSupport:3,margin:1.2,topK:10,weightK:0.05,cladeFilter:null,excludeClades:null,excludeOverrideFrac:0.5},opts);
   const score=new Map(),support=new Map(),children=new Map(); let total=0;
@@ -727,7 +738,7 @@ function run(markers, topN, selfKit){
   const prediction = exact
     ? { haplogroup:exact.bc, depth:depthOf(exact.bc), confidence:1, confident:true,
         exact:true, exactKit:exact.kit, exactMarkers:exact.numData }
-    : predict(voters, opts);
+    : holdOnLine(predict(voters, opts), selfRow && selfRow.bc, voters, opts);
   const top = voters.slice(0,30);
   const cladeVotes={}; for(const root of D.cladeRoots) cladeVotes[root]=top.filter(n=>cladeFlag(n,root)).length;
   const otherVotes = top.length - Object.values(cladeVotes).reduce((a,b)=>a+b,0);
