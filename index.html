@@ -99,7 +99,7 @@
 }
 </script>
 
-<meta name="app-version" content="1.1.1+2611010619-3a15e98d">
+<meta name="app-version" content="1.1.1+2611011819-52b26904">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -267,7 +267,7 @@ td.dc::before{content:' · ' attr(data-label) ' ';color:var(--mut)}
 td.mk::before{content:' · ';color:var(--mut)}
 .po{display:inline;padding:0 3px}
 }</style></head><body>
-<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611010619-3a15e98d</div>
+<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611011819-52b26904</div>
 <noscript><div class="card err">Для работы предиктора нужен JavaScript — включите его в браузере и обновите страницу.</div></noscript>
 <div id="install" class="install" style="display:none">
   <span class="install-txt"></span>
@@ -636,11 +636,11 @@ function bareExcl(h){ const t=labTerm(h); const out=[]; for(const r of (D.bareRu
 
 function holdOnLine(plain,line,voters,opts){
   const L=String(line||"").split("->");
-  if(!plain||L.length<2)return plain;
+  if(L.length<2||(!plain&&!voters.length))return plain;
   const pre=(a,b)=>a.length<=b.length&&a.every((x,i)=>x===b[i]), below=(p)=>pre(L,p.haplogroup.split("->"));
-  const own={haplogroup:line,depth:L.length,support:0,score:0,total:plain.total,confidence:1,confident:true};
-  if(pre(plain.haplogroup.split("->"),L))return below(plain)?plain:own;
-  if(below(plain))return plain;
+  const own={haplogroup:line,depth:L.length,support:0,score:0,total:plain?plain.total:0,confidence:1,confident:true};
+  if(plain&&pre(plain.haplogroup.split("->"),L))return below(plain)?plain:own;
+  if(plain&&below(plain))return plain;
   const anchored=predict(voters.filter(v=>v.bc&&pre(L,v.bc.split("->"))),opts);
   return anchored&&below(anchored)?anchored:own;
 }
@@ -670,7 +670,7 @@ function predict(voters,opts){
   let current=roots.reduce((a,b)=>score.get(b)>score.get(a)?b:a);
   for(;;){ const kids=children.get(current); if(!kids||!kids.size)break;
     const sorted=[...kids].sort((a,b)=>score.get(b)-score.get(a)); const best=sorted[0], second=sorted[1]||null;
-    if((support.get(best)||0)<o.minSupport)break; if(second&&score.get(best)<o.margin*score.get(second))break; current=best;
+    if((support.get(best)||0)<o.minSupport)break; if(second&&score.get(best)<o.margin*score.get(second))break; if(o.minChildShare&&score.get(best)<o.minChildShare*score.get(current))break; current=best;
   }
   const depth=depthOf(current), sc=score.get(current), confidence=sc/total;
   return { haplogroup:current, depth, support:support.get(current), score:sc, total, confidence,
