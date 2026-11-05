@@ -99,7 +99,7 @@
 }
 </script>
 
-<meta name="app-version" content="1.1.1+2611040322-f2baa2c5">
+<meta name="app-version" content="1.1.1+2611050323-bb7e50ea">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -267,7 +267,7 @@ td.dc::before{content:' · ' attr(data-label) ' ';color:var(--mut)}
 td.mk::before{content:' · ';color:var(--mut)}
 .po{display:inline;padding:0 3px}
 }</style></head><body>
-<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611040322-f2baa2c5</div>
+<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611050323-bb7e50ea</div>
 <noscript><div class="card err">Для работы предиктора нужен JavaScript — включите его в браузере и обновите страницу.</div></noscript>
 <div id="install" class="install" style="display:none">
   <span class="install-txt"></span>
@@ -474,6 +474,10 @@ var L=(function(){var q=null;try{q=String(new URLSearchParams(location.search).g
 var ftdnastatUrl=function ftdnastatUrl(lang, slug) {
   const l = lang === "ru" ? "ru" : "en";
   return "https://ftdnastat.github.io/" + l + "/c/" + encodeURIComponent(String(slug)) + "/#y";
+};
+var ftdnastatCladeUrl=function ftdnastatCladeUrl(lang, name) {
+  const l = lang === "ru" ? "ru" : "en";
+  return "https://ftdnastat.github.io/" + l + "/clade/" + String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") + "/";
 };
 var topCcCounts=function topCcCounts(rows, k) {
   const counts = new Map();
@@ -771,12 +775,12 @@ function displayShort(path){
 }
 function linkHaplo(path){
   const segs=String(path||"").split("->");
-  const lm=(segs[0]||"").trim().match(/^[A-Z]/); const L=lm?lm[0]:"";
+  const lm=(segs[0]||"").trim().match(/^[A-Z]/); const letter=lm?lm[0]:"";
   return segs.map((s,i)=>{
     const t=s.trim(); if(!t) return "";
-    if(i===0||!L) return esc(t);
+    if(i===0||!letter) return esc(t);
     const snp=t.replace(/^\s*[A-Z]-/,"");
-    return '<a href="https://discover.familytreedna.com/y-dna/'+esc(L+"-"+snp)+'/tree" target="_blank" rel="noopener noreferrer">'+esc(t)+'</a>';
+    return '<a href="'+esc(ftdnastatCladeUrl(L,letter+"-"+snp))+'" target="_blank" rel="noopener noreferrer">'+esc(t)+'</a>';
   }).join("->");
 }
 
