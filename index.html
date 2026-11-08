@@ -99,7 +99,7 @@
 }
 </script>
 
-<meta name="app-version" content="1.1.1+2611060324-42dbbfd9">
+<meta name="app-version" content="1.1.1+2611080325-cc99ff09">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -132,6 +132,7 @@ input[type=number]{width:64px;background:var(--field);color:var(--fg);border:1px
 .grid b{color:var(--mut);font-weight:500}
 .votes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .geo{margin-top:8px;font-size:13px;color:var(--mut)}
+.strk{margin-top:8px;font-size:13px;color:var(--warn);line-height:1.5}
 .geo .mono{color:var(--fg)}
 .fslink{color:inherit;text-decoration:none}
 .fslink:hover{color:var(--acc)}
@@ -267,7 +268,7 @@ td.dc::before{content:' · ' attr(data-label) ' ';color:var(--mut)}
 td.mk::before{content:' · ';color:var(--mut)}
 .po{display:inline;padding:0 3px}
 }</style></head><body>
-<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611060324-42dbbfd9</div>
+<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611080325-cc99ff09</div>
 <noscript><div class="card err">Для работы предиктора нужен JavaScript — включите его в браузере и обновите страницу.</div></noscript>
 <div id="install" class="install" style="display:none">
   <span class="install-txt"></span>
@@ -347,6 +348,9 @@ window.__I18N={
     "thDiffTitle": "на скольких маркерах расходитесь из скольких общих",
     "thMarkers": "маркеров",
     "years": "лет",
+    "strAgeOlder": "Внимание: в ветке {node} возраст по STR обычно завышен в {x} раза против веток того же возраста. TMRCA с вашими совпадениями здесь тоже завышен: делите примерно на {x}.",
+    "strAgeYounger": "Внимание: в ветке {node} возраст по STR обычно занижен в {x} раза против веток того же возраста. TMRCA с вашими совпадениями здесь тоже занижен: умножайте примерно на {x}.",
+    "strAgeAdj": "с поправкой на ветку",
     "predictorOnly": "только для предиктора",
     "predictorOnlyTitle": "кит не публикуется в таблице, только голосует",
     "errNoMarkers": "Вставьте STR-маркеры или номер кита.",
@@ -430,6 +434,9 @@ window.__I18N={
     "thDiffTitle": "on how many markers you differ, out of how many compared",
     "thMarkers": "markers",
     "years": "yrs",
+    "strAgeOlder": "Heads-up: in {node}, STR ages usually run {x} times too high compared with branches of the same age. TMRCA with your matches is too high here: divide it by about {x}.",
+    "strAgeYounger": "Heads-up: in {node}, STR ages usually run {x} times too low compared with branches of the same age. TMRCA with your matches is too low here: multiply it by about {x}.",
+    "strAgeAdj": "adjusted for this branch",
     "predictorOnly": "predictor only",
     "predictorOnlyTitle": "the kit is not published in the table, it only votes",
     "errNoMarkers": "Paste STR markers or a kit number.",
@@ -649,7 +656,7 @@ function holdOnLine(plain,line,voters,opts){
   return anchored&&below(anchored)?anchored:own;
 }
 function predict(voters,opts){
-  const o=Object.assign({minSupport:3,margin:1.2,topK:10,weightK:0.05,cladeFilter:null,excludeClades:null,excludeOverrideFrac:0.5},opts);
+  const o=Object.assign({minSupport:4,margin:2,topK:10,weightK:0.05,cladeFilter:null,excludeClades:null,excludeOverrideFrac:0.5},opts);
   const score=new Map(),support=new Map(),children=new Map(); let total=0;
   const nearest=(a)=>o.topK>0&&a.length>o.topK?a.slice().sort((x,y)=>x.gd-y.gd).slice(0,o.topK):a;
   let vs=voters.filter(v=>v.bc);
@@ -972,6 +979,12 @@ function render(j){
     geoHtml='<div class="geo">'+t("geoLead")+' '+geo.map(([cc,n])=>wrapFtdnastat(cc, regFlagRaw(cc)+' '+esc(regionLabel(cc)))+' <span class="mono">'+n+'</span>').join(' · ')+'</div>';
   }
 
+  let strK=null, strHtml='';
+  if(p && D.strAgeK){ const segs=String(p.haplogroup||'').split('->'); for(let i=segs.length-1;i>=0&&!strK;i--){ const k=D.strAgeK[segs[i].replace(/^[A-Z]+-/,'')]; if(k) strK={node:(segs[i].indexOf('-')>0?segs[i]:segs[0].charAt(0)+'-'+segs[i]),rel:k[0],off:k[2]}; } }
+  if(strK && !strK.off) strK=null;
+  if(strK){ strK.older=strK.rel>1; strK.x=+(strK.older?strK.rel:1/strK.rel).toFixed(1); strHtml='<div class="strk">'+fmt(strK.older?"strAgeOlder":"strAgeYounger",{node:esc(strK.node),x:strK.x.toFixed(1).replace('.',L==='ru'?',':'.')})+'</div>'; }
+  const adjTmrca=(v)=>strK?' <span class="mut" title="'+esc(t("strAgeAdj"))+'">≈ '+Math.round(strK.older?v/strK.x:v*strK.x)+'</span>':'';
+
   const ethFlag=(sheet)=>{ const ef=D.ethnicBySheet&&D.ethnicBySheet[sheet]; if(!ef) return ''; const lbl=esc(ethnicLabel(ef)); return '<span class="nbflag flagimg efl-'+ef+'" title="'+lbl+'"></span>'; };
   let rows="";
   for(const n of j.neighbors){
@@ -981,9 +994,9 @@ function render(j){
 
     const hCell = n.pbc ? esc(displayShort(n.pbc))+' <span class="prq" title="'+t("predictedDeeper")+'">(?)</span>' : (esc(displayShort(n.bc)||n.haplo));
     rows+='<tr><td class="mono kt" data-label="'+esc(t("thKit"))+'">'+kitLink+'</td><td class="mut prj" data-label="'+esc(t("thProject"))+'">'+proj+'</td><td class="h" data-label="'+esc(t("thHaplo"))+'">'+hCell+'</td>'+
-    '<td class="tm" data-label="'+esc(t("thTmrca"))+'">'+Math.round(n.tmrca)+' '+t("years")+'</td><td class="mono dc" data-label="'+esc(t("thDiff"))+'" title="'+esc(t("thDiffTitle"))+'">'+n.infDist+'/'+n.numData+'</td>'+
+    '<td class="tm" data-label="'+esc(t("thTmrca"))+'">'+Math.round(n.tmrca)+' '+t("years")+adjTmrca(n.tmrca)+'</td><td class="mono dc" data-label="'+esc(t("thDiff"))+'" title="'+esc(t("thDiffTitle"))+'">'+n.infDist+'/'+n.numData+'</td>'+
     '<td class="mk" data-label="'+esc(t("thMarkers"))+'">'+n.mc+' <button class="cp" data-mk="'+esc(n.markers)+'" aria-label="'+t("copyMarkersTitle")+'" title="'+t("copyMarkersTitle")+'">📋</button></td></tr>'; }
-  $("#out").innerHTML='<div class="card">'+predHtml+'<div class="votes">'+vhtml+'</div>'+geoHtml+
+  $("#out").innerHTML='<div class="card">'+predHtml+'<div class="votes">'+vhtml+'</div>'+geoHtml+strHtml+
     '<div class="hint">'+fmt("corpusHint",{my:j.myMarkers, matched:j.matched, top:j.topVoters})+hlp('corpus')+
       ' · <span class="verinline" title="build version">v'+esc(APP_VER)+'</span></div>'+
     '<div class="row"><button class="sharebtn" id="share">'+t("shareBtn")+'</button>'+
