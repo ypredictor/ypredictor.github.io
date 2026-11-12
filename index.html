@@ -99,7 +99,7 @@
 }
 </script>
 
-<meta name="app-version" content="1.1.1+2611100324-61d108cd">
+<meta name="app-version" content="1.1.1+2611120325-5904e565">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -268,7 +268,7 @@ td.dc::before{content:' · ' attr(data-label) ' ';color:var(--mut)}
 td.mk::before{content:' · ';color:var(--mut)}
 .po{display:inline;padding:0 3px}
 }</style></head><body>
-<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611100324-61d108cd</div>
+<div class="wrap"><h1 data-i18n="appTitle">Предиктор гаплогруппы Y-DNA</h1><div class="ver" title="build version">v1.1.1+2611120325-5904e565</div>
 <noscript><div class="card err">Для работы предиктора нужен JavaScript — включите его в браузере и обновите страницу.</div></noscript>
 <div id="install" class="install" style="display:none">
   <span class="install-txt"></span>
@@ -351,6 +351,7 @@ window.__I18N={
     "strAgeOlder": "Внимание: в ветке {node} возраст по STR обычно завышен в {x} раза против веток того же возраста. TMRCA с вашими совпадениями здесь тоже завышен: делите примерно на {x}.",
     "strAgeYounger": "Внимание: в ветке {node} возраст по STR обычно занижен в {x} раза против веток того же возраста. TMRCA с вашими совпадениями здесь тоже занижен: умножайте примерно на {x}.",
     "strAgeAdj": "с поправкой на ветку",
+    "strJumps": "По маркерам {list} даже близкие родственники часто расходятся сразу на несколько шагов.",
     "predictorOnly": "только для предиктора",
     "predictorOnlyTitle": "образец не публикуется в таблице, только голосует",
     "errNoMarkers": "Вставьте STR-маркеры или номер образца.",
@@ -437,6 +438,7 @@ window.__I18N={
     "strAgeOlder": "Heads-up: in {node}, STR ages usually run {x} times too high compared with branches of the same age. TMRCA with your matches is too high here: divide it by about {x}.",
     "strAgeYounger": "Heads-up: in {node}, STR ages usually run {x} times too low compared with branches of the same age. TMRCA with your matches is too low here: multiply it by about {x}.",
     "strAgeAdj": "adjusted for this branch",
+    "strJumps": "On {list}, even close kin often differ by several steps at once.",
     "predictorOnly": "predictor only",
     "predictorOnlyTitle": "the kit is not published in the table, it only votes",
     "errNoMarkers": "Paste STR markers or a kit number.",
@@ -996,7 +998,8 @@ function render(j){
     rows+='<tr><td class="mono kt" data-label="'+esc(t("thKit"))+'">'+kitLink+'</td><td class="mut prj" data-label="'+esc(t("thProject"))+'">'+proj+'</td><td class="h" data-label="'+esc(t("thHaplo"))+'">'+hCell+'</td>'+
     '<td class="tm" data-label="'+esc(t("thTmrca"))+'">'+Math.round(n.tmrca)+' '+t("years")+adjTmrca(n.tmrca)+'</td><td class="mono dc" data-label="'+esc(t("thDiff"))+'" title="'+esc(t("thDiffTitle"))+'">'+n.infDist+'/'+n.numData+'</td>'+
     '<td class="mk" data-label="'+esc(t("thMarkers"))+'">'+n.mc+' <button class="cp" data-mk="'+esc(n.markers)+'" aria-label="'+t("copyMarkersTitle")+'" title="'+t("copyMarkersTitle")+'">📋</button></td></tr>'; }
-  $("#out").innerHTML='<div class="card">'+predHtml+'<div class="votes">'+vhtml+'</div>'+geoHtml+strHtml+
+  const jumpsHtml=D.strJumps&&D.strJumps.length&&j.neighbors.length?'<div class="strk">'+fmt("strJumps",{list:esc(D.strJumps.join(", "))})+'</div>':'';
+  $("#out").innerHTML='<div class="card">'+predHtml+'<div class="votes">'+vhtml+'</div>'+geoHtml+strHtml+jumpsHtml+
     '<div class="hint">'+fmt("corpusHint",{my:j.myMarkers, matched:j.matched, top:j.topVoters})+hlp('corpus')+
       ' · <span class="verinline" title="build version">v'+esc(APP_VER)+'</span></div>'+
     '<div class="row"><button class="sharebtn" id="share">'+t("shareBtn")+'</button>'+
