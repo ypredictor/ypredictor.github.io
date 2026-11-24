@@ -54,7 +54,7 @@ That is what *trustworthy* and *robust* mean here in practice:
 > **Example.** From a shallow test the lab reports the broad group J1. From the markers the predictor builds the path down to a young branch: `J1 → ZS3042 → ZS4880 → B233` (B233 is one of the large Dargin branches). Such branches developed in the Caucasus and are usually not visible in the lab result.
 
 ### 🔍 STR matcher
-- More than just prediction: a full search for the **closest matches** — up to 50 neighbors, sorted by **TMRCA age** (the 0.95 probability point) rather than simply by genetic distance.
+- More than just prediction: a full search for the **closest matches** — up to 100 neighbors (30 by default), sorted by **TMRCA age** (the 0.95 probability point) rather than simply by genetic distance.
 - For each neighbor: haplogroup, project, TMRCA in years, `diff/cmp` (differences / compared markers), number of markers.
 - Correct distance computation accounting for palindromic markers (CDY, DYF395, etc.) and the DYS389 correction.
 
